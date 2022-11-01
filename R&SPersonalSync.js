@@ -1,11 +1,11 @@
-DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-
 function onOpen() {
     var ui = SpreadsheetApp.getUi();
     var mainMenu = ui.createMenu("R&S Functions");
     mainMenu.addItem("Sync to Ray's Calendar", "syncToCalendar");
     mainMenu.addToUi();  
 };
+
+DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 function getPreviousMonday(date) {
     const day = date.getDay();
@@ -89,7 +89,7 @@ function findValueOfMerged(allMerged, row, col) {
 
 function syncToCalendar() { 
   let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Temp"); // Put the tab name here
-  let myCalendar = CalendarApp.getOwnedCalendarsByName('RaySieun Couples Calendar'); // Put the Calendar name here
+  let myCalendar = CalendarApp.getOwnedCalendarsByName('RaySieun Couples Calendar')[0]; // Put the Calendar name here
   if( sheet == null || myCalendar == null) {return;}
   let firstColumn = "A";
   let lastColumn = "K";
@@ -125,7 +125,7 @@ function syncToCalendar() {
       if (previousEventName !== eventName) {
 
         if (previousEventName && previousTimeRanges) {
-          const eventKey = `${previousTimeRanges.startDate.getHours()}:${previousTimeRanges.startDate.getMinutes()}-${previousTimeRanges.endDate.getHours()}:${previousTimeRanges.endDate.getMinutes()}`;
+          const eventKey = `${previousTimeRanges.startDate.getHours()}:${previousTimeRanges.startDate.getMinutes()}-${previousTimeRanges.endDate.getHours()}:${previousTimeRanges.endDate.getMinutes()};${previousEventName}`;
           toCreateEvents[eventKey] = {
             name: previousEventName,
             start: previousTimeRanges.startDate,
@@ -163,9 +163,11 @@ function syncToCalendar() {
     toDelete[dayOfWeek] = deletePerDay;
     const events = myCalendar.getEventsForDay(firstDateValue);
     for (let e of events) {
-      const key = `${e.getStartTime().getHours()}:${e.getStartTime().getMinutes()}-${e.getEndTime().getHours()}:${e.getEndTime().getMinutes()}`
-      if (key in toCreate[dayOfWeek]) {
-        deletePerDay[key] = e;
+      const key = `${e.getStartTime().getHours()}:${e.getStartTime().getMinutes()}-${e.getEndTime().getHours()}:${e.getEndTime().getMinutes()};${e.getTitle()}`
+      if (!(key in toCreate[dayOfWeek])) {
+        e.deleteEvent();
+      } else {
+        delete toCreate[dayOfWeek][key]
       }
       
     }
