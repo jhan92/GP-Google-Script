@@ -89,7 +89,7 @@ function findValueOfMerged(allMerged, row, col) {
 
 function syncToCalendar() { 
   let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Temp"); // Put the tab name here
-  let myCalendar = CalendarApp.getDefaultCalendar();//CalendarApp.getOwnedCalendarsByName('RaySieun Couples Calendar')[0]; // Put the Calendar name here
+  let myCalendar = CalendarApp.getOwnedCalendarsByName('RaySieun Couples Calendar')[0]; // Put the Calendar name here
   if( sheet == null || myCalendar == null) {return;}
   let firstColumn = "A";
   let lastColumn = "K";
