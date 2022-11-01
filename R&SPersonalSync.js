@@ -89,7 +89,7 @@ function findValueOfMerged(allMerged, row, col) {
 
 function syncToCalendar() { 
   let sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Temp"); // Put the tab name here
-  let myCalendar = CalendarApp.getOwnedCalendarsByName('RaySieun Couples Calendar')[0]; // Put the Calendar name here
+  let myCalendar = CalendarApp.getDefaultCalendar();//CalendarApp.getOwnedCalendarsByName('RaySieun Couples Calendar')[0]; // Put the Calendar name here
   if( sheet == null || myCalendar == null) {return;}
   let firstColumn = "A";
   let lastColumn = "K";
@@ -98,7 +98,12 @@ function syncToCalendar() {
   let WUDRange = sheet.getRange(columnRange);
   let allCells = WUDRange.getValues();
   let allMerged = WUDRange.getMergedRanges();
-  let allFormulas = WUDRange.getFormulasR1C1();
+  let allFormulas = WUDRange.getRichTextValues();
+  allFormulas = allFormulas.map(row => {
+    return row.map(val => {
+      return val.getLinkUrl();
+    });
+  });
   const toCreate = {}
   let firstDateValue;
   
@@ -114,10 +119,12 @@ function syncToCalendar() {
     let index = 3;
     let previousEventName = '';
     let previousTimeRanges;
+    let previousFormula;
     while (index < numRows) {
       const currTimeRange = allCells[index][0];
       const timeRanges = getTimeRange(currTimeRange, currDate);
       let eventName = allCells[index][dayCol];
+      let formula = allFormulas[index][dayCol];
       if (!eventName) {
         eventName = findValueOfMerged(allMerged, index + 1, dayCol + 1);
       }
@@ -131,12 +138,16 @@ function syncToCalendar() {
             start: previousTimeRanges.startDate,
             end: previousTimeRanges.endDate, 
             date: currDate,
+            options: {
+              description: previousFormula
+            },
             allDay: false
           };
         }
 
         previousEventName = eventName;
         previousTimeRanges = timeRanges;
+        previousFormula = formula;
       } else if (previousEventName == eventName && eventName) {
         if (!previousTimeRanges) {
           previousTimeRanges = timeRanges;
@@ -180,6 +191,7 @@ function syncToCalendar() {
   for (let toCreatePerDay in toCreate) {
     for (let key in toCreate[toCreatePerDay]) {
       let e= toCreate[toCreatePerDay][key]
+      myCalendar.createEven
       myCalendar.createEvent(e['name'], e['start'], e['end'], e['options']);
       counter++;
       if (counter % 20 == 0) {
@@ -195,4 +207,3 @@ function syncToCalendar() {
     }
   }
 }
-
